@@ -52,17 +52,21 @@ export async function addMeasurement(
 
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('measurements').insert({
-        date: input.date,
-        weight_kg: input.weightKg,
-        height_cm: input.heightCm,
-        body_fat_percentage: input.bodyFatPercentage,
-        chest_cm: input.chestCm,
-        waist_cm: input.waistCm,
-        arms_cm: input.armsCm,
-        thigh_cm: input.thighCm,
-        notes: input.notes || null,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('measurements').insert({
+          profile_id: user.id,
+          date: input.date,
+          weight_kg: input.weightKg,
+          height_cm: input.heightCm,
+          body_fat_percentage: input.bodyFatPercentage,
+          chest_cm: input.chestCm,
+          waist_cm: input.waistCm,
+          arms_cm: input.armsCm,
+          thigh_cm: input.thighCm,
+          notes: input.notes || null,
+        });
+      }
     } catch (err) {
       console.warn('Supabase insert failed, saving locally:', err);
     }

@@ -39,12 +39,18 @@ export async function getTodaysWorkout(): Promise<Workout> {
 export async function saveWorkoutSession(session: WorkoutSessionSummary): Promise<WorkoutSessionSummary> {
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('workout_sessions').insert({
-        workout_id: session.workoutId,
-        duration_minutes: session.durationMinutes,
-        calories_burned: session.caloriesBurned,
-        completed: true,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(session.workoutId);
+        await supabase.from('workout_sessions').insert({
+          profile_id: user.id,
+          workout_id: isUUID ? session.workoutId : null,
+          workout_name: session.workoutName,
+          duration_minutes: session.durationMinutes,
+          calories_burned: session.caloriesBurned,
+          completed: true,
+        });
+      }
     } catch (err) {
       console.warn('Supabase session save failed, caching locally:', err);
     }
@@ -58,6 +64,30 @@ export async function saveWorkoutSession(session: WorkoutSessionSummary): Promis
 }
 
 export async function getRecentWorkouts(): Promise<RecentWorkoutActivity[]> {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('workout_sessions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data && data.length > 0) {
+        return data.map((item) => ({
+          id: item.id,
+          workoutName: item.workout_name || 'Logged Workout',
+          category: 'Logged Session',
+          relativeTime: new Date(item.created_at).toLocaleDateString(),
+          durationMinutes: item.duration_minutes,
+          caloriesBurned: item.calories_burned,
+          date: item.created_at.split('T')[0],
+        }));
+      }
+    } catch (err) {
+      console.warn('Failed querying remote workout_sessions:', err);
+    }
+  }
+
   const logged = getStorageItem<WorkoutSessionSummary[]>(WORKOUT_SESSIONS_STORAGE_KEY, []);
 
   const loggedActivities: RecentWorkoutActivity[] = logged.map((l) => ({
