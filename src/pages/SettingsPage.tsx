@@ -14,6 +14,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { useApp } from '../context/AppContext';
 import { cn } from '../utils/cn';
+import { checkSupabaseConnection, type SupabaseHealthReport } from '../lib/supabase';
 import type { UserPreferences } from '../types/models';
 
 export const SettingsPage: React.FC = () => {
@@ -34,6 +35,39 @@ export const SettingsPage: React.FC = () => {
   );
   const [isSaving, setIsSaving] = useState(false);
 
+  // Supabase diagnostic state
+  const [healthReport, setHealthReport] = useState<SupabaseHealthReport | null>(null);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+
+  const runDiagnostic = async () => {
+    setIsTestingConnection(true);
+    try {
+      const report = await checkSupabaseConnection();
+      setHealthReport(report);
+      if (report.status === 'connected') {
+        addToast({
+          title: 'Supabase Connected!',
+          message: report.message,
+          type: 'success',
+        });
+      } else if (report.status === 'tables_missing') {
+        addToast({
+          title: 'Tables Missing in Supabase',
+          message: 'Please run the SQL migration in Supabase SQL Editor.',
+          type: 'warning',
+        });
+      } else {
+        addToast({
+          title: 'Database Check',
+          message: report.message,
+          type: 'info',
+        });
+      }
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
   useEffect(() => {
     if (preferences) {
       setWorkoutReminders(preferences.notifications.workoutReminders);
@@ -41,6 +75,8 @@ export const SettingsPage: React.FC = () => {
       setUnits(preferences.units);
       setLanguage(preferences.language);
     }
+    // Automatically run connection check on mount
+    checkSupabaseConnection().then(setHealthReport);
   }, [preferences]);
 
   const handleAppearanceChange = (mode: 'dark' | 'light' | 'system') => {
@@ -292,21 +328,82 @@ export const SettingsPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Cloud & Supabase Architecture Status Card */}
-      <Card className="p-5 rounded-2xl bg-[#171A21] border border-[#232834] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C6FF3D] animate-pulse" />
-            <h4 className="text-sm font-bold text-white">Data Architecture Ready for Supabase</h4>
+      {/* Cloud & Supabase Live Diagnostic Card */}
+      <Card className="p-6 rounded-2xl bg-[#171A21] border border-[#232834] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'w-3 h-3 rounded-full',
+                  healthReport?.status === 'connected'
+                    ? 'bg-[#C6FF3D] shadow-[0_0_10px_#C6FF3D]'
+                    : healthReport?.status === 'tables_missing'
+                    ? 'bg-amber-400 shadow-[0_0_10px_#F59E0B]'
+                    : healthReport?.status === 'error'
+                    ? 'bg-rose-500 shadow-[0_0_10px_#F43F5E]'
+                    : 'bg-slate-500'
+                )}
+              />
+              <h3 className="text-base font-bold text-white tracking-tight">
+                Supabase Database Connection
+              </h3>
+            </div>
+            <p className="text-xs text-slate-400">
+              Verify if this deployment is actively querying your remote PostgreSQL database.
+            </p>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Active data layer running in high-performance local memory with pre-wired Supabase service handlers.
-          </p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={runDiagnostic}
+            isLoading={isTestingConnection}
+            className="text-xs border-[#2F374A] hover:border-[#C6FF3D]"
+          >
+            Run Diagnostic Test
+          </Button>
         </div>
 
-        <span className="text-xs font-mono font-semibold px-3 py-1 rounded-lg bg-[#0F1115] text-[#C6FF3D] border border-[#242A38] shrink-0">
-          v1.0.0-MVP
-        </span>
+        {healthReport ? (
+          <div
+            className={cn(
+              'p-4 rounded-xl border text-xs space-y-2',
+              healthReport.status === 'connected'
+                ? 'bg-[#C6FF3D]/5 border-[#C6FF3D]/30 text-slate-200'
+                : healthReport.status === 'tables_missing'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                : healthReport.status === 'error'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+                : 'bg-[#101319] border-[#242A38] text-slate-400'
+            )}
+          >
+            <div className="flex items-center justify-between font-bold">
+              <span className="uppercase tracking-wider">
+                Status: {healthReport.status.replace('_', ' ')}
+              </span>
+              {healthReport.maskedUrl && (
+                <span className="font-mono text-[11px] text-slate-300">
+                  {healthReport.maskedUrl}
+                </span>
+              )}
+            </div>
+            <p className="leading-relaxed">{healthReport.message}</p>
+            {healthReport.status === 'tables_missing' && (
+              <div className="pt-2 text-[11px] text-slate-300 border-t border-amber-500/20">
+                💡 <strong>Next Step:</strong> Go to your Supabase Dashboard &gt; <strong>SQL Editor</strong>, paste the content of{' '}
+                <code className="bg-black/40 px-1 py-0.5 rounded text-amber-300">
+                  supabase/migrations/20260928000000_initial_gym_schema.sql
+                </code>{' '}
+                and click <strong>Run</strong>.
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-3.5 rounded-xl bg-[#101319] border border-[#232834] text-xs text-slate-400">
+            Click <strong>&quot;Run Diagnostic Test&quot;</strong> above to check if your Vercel deployment is communicating with your Supabase database.
+          </div>
+        )}
       </Card>
     </div>
   );
