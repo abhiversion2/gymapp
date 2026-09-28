@@ -117,6 +117,53 @@ export async function signUp(params: SignUpParams): Promise<AuthResponse> {
   };
 }
 
+export async function signInDemo(): Promise<AuthResponse> {
+  const demoProfile: Profile = {
+    ...mockProfile,
+    id: 'usr_demo_apexfit',
+    fullName: 'Abhijeet Vishwakarma',
+    email: 'abhijeet@example.com',
+    mobileNumber: '+91 9876543210',
+    phone: '+91 9876543210',
+    dateOfBirth: '1995-08-15',
+    membershipPlan: 'Premium',
+    status: 'Active',
+    emailVerified: true,
+  };
+
+  const demoUser = {
+    id: demoProfile.id,
+    email: demoProfile.email,
+    user_metadata: {
+      full_name: demoProfile.fullName,
+      mobile_number: demoProfile.mobileNumber,
+      date_of_birth: demoProfile.dateOfBirth,
+    },
+    app_metadata: { provider: 'email' },
+    aud: 'authenticated',
+    role: 'authenticated',
+    created_at: '2026-01-10T00:00:00.000Z',
+    email_confirmed_at: '2026-01-10T00:00:00.000Z',
+  } as unknown as import('@supabase/supabase-js').User;
+
+  const demoSession = {
+    access_token: 'demo_session_token',
+    refresh_token: 'demo_refresh_token',
+    expires_in: 86400,
+    token_type: 'bearer',
+    user: demoUser,
+  } as unknown as import('@supabase/supabase-js').Session;
+
+  setStorageItem(LOCAL_AUTH_USER_KEY, demoUser);
+  setStorageItem(LOCAL_PROFILE_KEY, demoProfile);
+
+  return {
+    user: demoUser,
+    session: demoSession,
+    needsEmailVerification: false,
+  };
+}
+
 export async function signIn(params: SignInParams): Promise<AuthResponse> {
   const { email, password } = params;
 
@@ -127,6 +174,17 @@ export async function signIn(params: SignInParams): Promise<AuthResponse> {
     });
 
     if (error) {
+      // If user is testing with demo credentials and account isn't in Supabase yet, allow instant demo access
+      const isDemoEmail =
+        email.toLowerCase() === 'abhijeet@example.com' ||
+        email.toLowerCase() === 'demo@apexfit.app';
+      const isDemoPassword =
+        password === 'Fitness@2026' || password === 'DemoUser@2026!';
+
+      if (isDemoEmail && isDemoPassword) {
+        return signInDemo();
+      }
+
       throw new Error(formatAuthError(error));
     }
 
@@ -137,18 +195,7 @@ export async function signIn(params: SignInParams): Promise<AuthResponse> {
   }
 
   // Local fallback
-  const localProfile = getStorageItem<Profile>(LOCAL_PROFILE_KEY, {
-    ...mockProfile,
-    email,
-  });
-
-  const fakeUser = { id: localProfile.id, email } as import('@supabase/supabase-js').User;
-  setStorageItem(LOCAL_AUTH_USER_KEY, fakeUser);
-
-  return {
-    user: fakeUser,
-    session: { access_token: 'demo_token' } as unknown as import('@supabase/supabase-js').Session,
-  };
+  return signInDemo();
 }
 
 export async function signOut(): Promise<void> {

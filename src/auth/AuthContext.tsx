@@ -12,6 +12,7 @@ export interface AuthContextType {
   isEmailVerified: boolean;
   signUp: (params: SignUpParams) => Promise<AuthResponse>;
   signIn: (params: SignInParams) => Promise<AuthResponse>;
+  signInDemo: () => Promise<AuthResponse>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;

@@ -61,10 +61,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const { data: { session: currentSession } } = await supabase.auth.getSession();
           if (mounted) {
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
             if (currentSession?.user) {
+              setSession(currentSession);
+              setUser(currentSession.user);
               await fetchProfile(currentSession.user.id, currentSession.user);
+            } else {
+              // Check if an active demo session exists locally
+              const localUser = getStorageItem<User | null>(LOCAL_AUTH_USER_KEY, null);
+              if (localUser) {
+                setUser(localUser);
+                const p = await authService.getProfile(localUser.id);
+                setProfile(p || mockProfile);
+              } else {
+                setSession(null);
+                setUser(null);
+                setProfile(null);
+              }
             }
           }
         } catch (err) {
@@ -150,6 +162,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signInDemo = async (): Promise<AuthResponse> => {
+    setLoading(true);
+    try {
+      const response = await authService.signInDemo();
+      if (response.user) {
+        setUser(response.user);
+        setSession(response.session);
+        const p = await authService.getProfile(response.user.id);
+        setProfile(p || mockProfile);
+      }
+      return response;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -210,6 +238,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isEmailVerified,
     signUp,
     signIn,
+    signInDemo,
     signOut,
     resetPassword,
     changePassword,

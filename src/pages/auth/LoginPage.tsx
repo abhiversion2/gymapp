@@ -9,7 +9,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 
 export const LoginPage: React.FC = () => {
-  const { signIn } = useAuth();
+  const { signIn, signInDemo } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,10 +52,7 @@ export const LoginPage: React.FC = () => {
     setValue('email', 'abhijeet@example.com');
     setValue('password', 'Fitness@2026');
     try {
-      await signIn({
-        email: 'abhijeet@example.com',
-        password: 'Fitness@2026',
-      });
+      await signInDemo();
       navigate(redirectPath, { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to sign in with demo account';
