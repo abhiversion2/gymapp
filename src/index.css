@@ -18,14 +18,15 @@
   --color-badge-text: #C6FF3D;
 }
 
+html.light,
 .light {
   --color-bg: #F8FAFC;
   --color-card: #FFFFFF;
   --color-card-subtle: #F1F5F9;
   --color-border: #E2E8F0;
   --color-border-subtle: #CBD5E1;
-  --color-accent: #10B981;
-  --color-accent-hover: #059669;
+  --color-accent: #0F172A;
+  --color-accent-hover: #1E293B;
   --color-accent-text: #FFFFFF;
   --color-text: #0F172A;
   --color-text-secondary: #334155;
@@ -45,6 +46,7 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
@@ -73,7 +75,136 @@
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
 }
 
-/* Smooth transitions */
-.transition-theme {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+/* ==============================================================================
+   LIGHT THEME OVERRIDES (Comprehensive, high-contrast, Stripe-style aesthetic)
+   ============================================================================== */
+html.light,
+html.light body,
+html.light #root,
+html.light main {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Surfaces */
+.light aside,
+.light header,
+.light nav,
+.light .bg-\[\#171A21\],
+.light .bg-\[\#101217\],
+.light .bg-\[\#13161D\],
+.light .bg-\[\#171B24\],
+.light .bg-\[\#12151B\],
+.light .bg-gradient-to-br {
+  background: #FFFFFF !important;
+  color: #0F172A;
+}
+
+/* Nested subtle containers & cards */
+.light .bg-\[\#0F1115\],
+.light .bg-\[\#1F242F\],
+.light .bg-\[\#1F2533\],
+.light .bg-\[\#222836\],
+.light .bg-\[\#101319\],
+.light .bg-\[\#1A1F2B\],
+.light .bg-\[\#1C212B\],
+.light .bg-\[\#1C212D\],
+.light .bg-\[\#1C2029\],
+.light .bg-\[\#1A202C\],
+.light .bg-\[\#0F1115\]\/80,
+.light .bg-\[\#0F1115\]\/50,
+.light .bg-\[\#0C0E12\]\/80,
+.light .bg-\[\#101217\]\/90,
+.light .bg-\[\#101217\]\/95 {
+  background-color: #F1F5F9 !important;
+}
+
+/* Cards & Modals styling in light mode */
+.light .rounded-2xl,
+.light .rounded-3xl,
+.light .rounded-xl {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.light .shadow-lg,
+.light .shadow-xl,
+.light .shadow-2xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Headings & Text */
+.light .text-white {
+  color: #0F172A !important;
+}
+
+.light .text-slate-100,
+.light .text-slate-200 {
+  color: #1E293B !important;
+}
+
+.light .text-slate-300,
+.light .text-slate-400 {
+  color: #475569 !important;
+}
+
+.light .text-slate-500 {
+  color: #64748B !important;
+}
+
+/* Borders */
+.light [class*="border-[#"] {
+  border-color: #E2E8F0 !important;
+}
+
+.light [class*="divide-[#"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E2E8F0 !important;
+}
+
+/* Inputs, Selects, Textareas */
+.light input,
+.light select,
+.light textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+.light input:focus,
+.light select:focus,
+.light textarea:focus {
+  border-color: #0F172A !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.15) !important;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Lime accent adjustments for high readability in light mode */
+.light .text-\[\#C6FF3D\] {
+  color: #047857 !important;
+}
+
+.light .bg-\[\#C6FF3D\] {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
+}
+
+.light .bg-\[\#C6FF3D\]:hover {
+  background-color: #1E293B !important;
+}
+
+.light .bg-\[\#C6FF3D\]\/10,
+.light .bg-\[\#C6FF3D\]\/15,
+.light .bg-\[\#C6FF3D\]\/20,
+.light .bg-\[\#C6FF3D\]\/25 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #047857 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.light .bg-\[\#C6FF3D\]\/5 {
+  background-color: rgba(16, 185, 129, 0.06) !important;
 }

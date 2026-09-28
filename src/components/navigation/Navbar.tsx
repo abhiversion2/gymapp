@@ -1,14 +1,14 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Sun, Moon, Bell, Menu, Flame } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
+import { useApp } from '../../context/AppContext';
 
 export interface NavbarProps {
   onOpenMobileMenu?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
-  const { theme, changeTheme } = useTheme();
+  const { theme, changeTheme } = useApp();
   const location = useLocation();
 
   const getPageTitle = (pathname: string) => {
@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-[#101217]/90 backdrop-blur-md border-b border-[#202532] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
+    <header className="sticky top-0 z-20 bg-[var(--color-card)]/90 backdrop-blur-md border-b border-[var(--color-border)] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
       <div className="flex items-center gap-3">
         {/* Mobile menu trigger */}
         <button
@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
       {/* Header Actions */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Facility status pill */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#171A21] border border-[#262D3D] text-xs">
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-card-subtle)] border border-[var(--color-border)] text-xs">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-slate-300 font-medium">Facility Open 24/7</span>
         </div>

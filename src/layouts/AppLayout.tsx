@@ -27,7 +27,7 @@ export const AppLayout: React.FC = () => {
   } = useApp();
 
   return (
-    <div className="min-h-screen bg-[#0F1115] text-slate-100 flex flex-col lg:flex-row transition-colors selection:bg-[#C6FF3D] selection:text-black">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col lg:flex-row transition-colors selection:bg-[#C6FF3D] selection:text-black">
       {/* Desktop Left Sidebar */}
       <Sidebar profile={profile} membership={membership} />
 

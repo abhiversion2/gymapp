@@ -14,13 +14,13 @@ export const Card: React.FC<CardProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-[#171A21] border border-[#232834] text-slate-100 shadow-lg',
+    default: 'bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text)] shadow-lg',
     interactive:
-      'bg-[#171A21] border border-[#232834] text-slate-100 shadow-md hover:border-[#C6FF3D]/40 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-200 cursor-pointer',
+      'bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-text)] shadow-md hover:border-[#C6FF3D]/40 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer',
     glass:
-      'bg-[#171A21]/80 backdrop-blur-md border border-white/10 text-slate-100 shadow-xl',
+      'bg-[var(--color-card)]/80 backdrop-blur-md border border-white/10 text-[var(--color-text)] shadow-xl',
     accentBorder:
-      'bg-[#171A21] border-l-4 border-l-[#C6FF3D] border-t border-r border-b border-[#232834] text-slate-100 shadow-lg',
+      'bg-[var(--color-card)] border-l-4 border-l-[#C6FF3D] border-t border-r border-b border-[var(--color-border)] text-[var(--color-text)] shadow-lg',
   };
 
   return (

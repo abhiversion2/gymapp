@@ -64,7 +64,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   return (
     <>
       {/* Bottom Fixed Navigation Bar */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#101217]/95 backdrop-blur-xl border-t border-[#202532] px-2 py-1.5 safe-area-bottom">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-xl border-t border-[var(--color-border)] px-2 py-1.5 safe-area-bottom transition-colors">
         <div className="flex items-center justify-around">
           {mainTabs.map((tab) => (
             <NavLink

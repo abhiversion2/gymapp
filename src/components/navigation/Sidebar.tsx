@@ -39,9 +39,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ profile, membership }) => {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-72 bg-[#101217] border-r border-[#202532] h-screen sticky top-0 shrink-0 select-none z-30">
+    <aside className="hidden lg:flex flex-col w-72 bg-[var(--color-card)] border-r border-[var(--color-border)] h-screen sticky top-0 shrink-0 select-none z-30 transition-colors">
       {/* Brand Header */}
-      <div className="p-6 pb-5 flex items-center justify-between border-b border-[#1C202B]">
+      <div className="p-6 pb-5 flex items-center justify-between border-b border-[var(--color-border)]">
         <NavLink to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C6FF3D] to-[#88CA05] flex items-center justify-center text-[#0F1115] shadow-[0_0_20px_rgba(198,255,61,0.3)] transition-transform duration-200 group-hover:scale-105">
             <Flame className="w-6 h-6 fill-current" />
@@ -107,10 +107,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ profile, membership }) => {
       </div>
 
       {/* Bottom Profile Widget */}
-      <div className="p-4 border-t border-[#1C202B] bg-[#0C0E12]/80">
+      <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card-subtle)]">
         <NavLink
           to="/profile"
-          className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/5 transition-all group border border-transparent hover:border-[#242A38]"
+          className="flex items-center justify-between p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all group border border-transparent hover:border-[var(--color-border)]"
         >
           <div className="flex items-center gap-3 min-w-0">
             <Avatar
