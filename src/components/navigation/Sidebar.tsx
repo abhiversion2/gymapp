@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Dumbbell,
@@ -8,14 +8,15 @@ import {
   Scale,
   Bell,
   Settings,
-  ChevronRight,
   Flame,
   ShieldCheck,
+  LogOut,
 } from 'lucide-react';
 import { Avatar } from '../common/Avatar';
 import { Badge } from '../common/Badge';
 import { cn } from '../../utils/cn';
 import type { Profile, MembershipDetails } from '../../types/models';
+import { useAuth } from '../../auth/useAuth';
 
 export interface SidebarProps {
   profile: Profile | null;
@@ -23,6 +24,18 @@ export interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ profile, membership }) => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch {
+      navigate('/login', { replace: true });
+    }
+  };
+
   const navItems = [
     { label: 'Dashboard', path: '/', icon: <LayoutDashboard className="w-5 h-5" /> },
     { label: 'Workouts', path: '/workouts', icon: <Dumbbell className="w-5 h-5" /> },
@@ -106,11 +119,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ profile, membership }) => {
         ))}
       </div>
 
-      {/* Bottom Profile Widget */}
-      <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card-subtle)]">
+      {/* Bottom Profile & Logout Widget */}
+      <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card-subtle)] flex items-center gap-2">
         <NavLink
           to="/profile"
-          className="flex items-center justify-between p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all group border border-transparent hover:border-[var(--color-border)]"
+          className="flex-1 flex items-center justify-between p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all group border border-transparent hover:border-[var(--color-border)] min-w-0"
         >
           <div className="flex items-center gap-3 min-w-0">
             <Avatar
@@ -125,12 +138,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ profile, membership }) => {
               </p>
               <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#C6FF3D]" />
-                <span className="truncate">{membership?.planName || 'Premium'} Member</span>
+                <span className="truncate">{membership?.planName || 'Premium'}</span>
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
         </NavLink>
+        <button
+          onClick={handleLogout}
+          title="Sign out"
+          aria-label="Sign out"
+          className="p-2.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Dumbbell,
@@ -10,9 +10,11 @@ import {
   Scale,
   Bell,
   Settings,
+  LogOut,
 } from 'lucide-react';
 import { Drawer } from '../common/Drawer';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../auth/useAuth';
 
 export interface MobileNavigationProps {
   isMenuOpen?: boolean;
@@ -23,6 +25,8 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   isMenuOpen: externalMenuOpen,
   setIsMenuOpen: externalSetMenuOpen,
 }) => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [internalMenuOpen, setInternalMenuOpen] = useState(false);
   const isMenuOpen = externalMenuOpen !== undefined ? externalMenuOpen : internalMenuOpen;
   const setIsMenuOpen = externalSetMenuOpen || setInternalMenuOpen;
@@ -140,6 +144,28 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
               </div>
             </NavLink>
           ))}
+
+          {/* Logout Action in Mobile Drawer */}
+          <button
+            onClick={async () => {
+              setIsMenuOpen(false);
+              try {
+                await signOut();
+                navigate('/login', { replace: true });
+              } catch {
+                navigate('/login', { replace: true });
+              }
+            }}
+            className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all text-left"
+          >
+            <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold">Sign Out</p>
+              <p className="text-xs opacity-80 truncate mt-0.5">End active session on this device</p>
+            </div>
+          </button>
         </div>
       </Drawer>
     </>

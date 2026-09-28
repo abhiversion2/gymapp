@@ -26,10 +26,13 @@ export interface Profile {
   fullName: string;
   email: string;
   phone?: string;
+  mobileNumber?: string;
+  dateOfBirth?: string;
   avatarUrl?: string;
   memberSince: string;
   membershipPlan: MembershipPlan;
   status: MembershipStatus;
+  emailVerified?: boolean;
 }
 
 export interface MembershipDetails {

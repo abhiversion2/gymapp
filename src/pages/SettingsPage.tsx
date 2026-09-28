@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sun,
   Moon,
@@ -9,16 +10,28 @@ import {
   Save,
   CheckCircle2,
   Sparkles,
+  KeyRound,
+  LogOut,
+  Trash2,
+  Shield,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../auth/useAuth';
+import { ChangePasswordModal } from '../components/profile/ChangePasswordModal';
+import { DeleteAccountModal } from '../components/profile/DeleteAccountModal';
 import { cn } from '../utils/cn';
 import { checkSupabaseConnection, type SupabaseHealthReport } from '../lib/supabase';
 import type { UserPreferences } from '../types/models';
 
 export const SettingsPage: React.FC = () => {
   const { preferences, handleUpdatePreferences, theme, changeTheme, addToast } = useApp();
+  const { user, isEmailVerified, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [appearance, setAppearance] = useState<'dark' | 'light' | 'system'>(
     theme || 'dark'
@@ -405,6 +418,118 @@ export const SettingsPage: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* Account & Security Section */}
+      <Card className="p-6 space-y-5 border-[var(--color-border)]">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
+            <Shield className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--color-text)]">
+              Account & Security
+            </h3>
+            <p className="text-xs text-[var(--color-muted)]">
+              Manage your credentials, active authentication session, and account retention.
+            </p>
+          </div>
+        </div>
+
+        <div className="divide-y divide-[var(--color-border)] border-t border-[var(--color-border)] pt-2 text-sm">
+          {/* User Email & Verification */}
+          <div className="py-3.5 flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-[var(--color-text)]">Authentication Email</p>
+              <p className="text-xs text-[var(--color-muted)]">{user?.email || 'abhijeet@example.com'}</p>
+            </div>
+            {isEmailVerified ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Verified
+              </span>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/verify-email')}
+                className="text-xs text-amber-400 border-amber-500/30"
+              >
+                Verify Email
+              </Button>
+            )}
+          </div>
+
+          {/* Change Password */}
+          <div className="py-3.5 flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-[var(--color-text)]">Password</p>
+              <p className="text-xs text-[var(--color-muted)]">Update your account password regularly for security</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsChangePasswordOpen(true)}
+              leftIcon={<KeyRound className="w-4 h-4" />}
+            >
+              Change Password
+            </Button>
+          </div>
+
+          {/* Sign Out */}
+          <div className="py-3.5 flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-[var(--color-text)]">Active Session</p>
+              <p className="text-xs text-[var(--color-muted)]">Sign out of this browser or device</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await signOut();
+                navigate('/login', { replace: true });
+              }}
+              leftIcon={<LogOut className="w-4 h-4" />}
+            >
+              Sign Out
+            </Button>
+          </div>
+
+          {/* Delete Account */}
+          <div className="py-3.5 flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-rose-400">Danger Zone: Delete Account</p>
+              <p className="text-xs text-[var(--color-muted)]">Permanently erase your gym logs, profile and workout stats</p>
+            </div>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(true)}
+              leftIcon={<Trash2 className="w-4 h-4" />}
+            >
+              Delete Account
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        onSuccessToast={() =>
+          addToast({
+            title: 'Password Updated',
+            message: 'Your account password was updated successfully.',
+            type: 'success',
+          })
+        }
+      />
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </div>
   );
 };

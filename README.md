@@ -1,49 +1,83 @@
-# 🏋️‍♂️ ApexFit — Modern Cross-Platform Gym Management & Fitness Platform (MVP)
+# 🏋️‍♂️ ApexFit — Production-Grade Cross-Platform Gym & Fitness Platform
 
-> A modern, production-grade Gym Management & Workout Tracking MVP built with **React 19**, **Vite**, **TypeScript**, and **Tailwind CSS**, architected for maximum code-sharing with **React Native** and immediate backend integration with **Supabase**.
+> A modern, production-grade Gym Management & Workout Tracking application built with **React 19**, **Vite**, **TypeScript**, **Tailwind CSS**, and **Supabase Auth**. Architected for maximum code-sharing with **React Native** and deployed on **Vercel**.
 
 ---
 
 ## 📑 Table of Contents
 1. [Project Overview](#-project-overview)
-2. [UI/UX Design System](#-uiux-design-system)
-3. [Technology Stack](#-technology-stack)
-4. [Architecture & Folder Structure](#-architecture--folder-structure)
-5. [Core Features in MVP](#-core-features-in-mvp)
-6. [Cross-Platform & React Native Code Sharing Strategy](#-cross-platform--react-native-code-sharing-strategy)
+2. [Authentication & Account Management](#-authentication--account-management)
+3. [UI/UX Design System](#-uiux-design-system)
+4. [Technology Stack](#-technology-stack)
+5. [Architecture & Folder Structure](#-architecture--folder-structure)
+6. [Core Features](#-core-features)
 7. [Supabase Setup & Database Migrations](#-supabase-setup--database-migrations)
-8. [Installation & Getting Started](#-installation--getting-started)
-9. [Environment Variables](#-environment-variables)
-10. [Building for Production](#-building-for-production)
-11. [Vercel Deployment Guide](#-vercel-deployment-guide)
-12. [Future Roadmap](#-future-roadmap)
+8. [Supabase Auth Configuration Guide](#-supabase-auth-configuration-guide)
+9. [Row Level Security (RLS) & Security Policies](#-row-level-security-rls--security-policies)
+10. [Environment Variables](#-environment-variables)
+11. [Installation & Getting Started](#-installation--getting-started)
+12. [Vercel Deployment Guide](#-vercel-deployment-guide)
+13. [Future Roadmap](#-future-roadmap)
 
 ---
 
 ## 🌟 Project Overview
 
-**ApexFit** is designed for modern gym members and fitness enthusiasts who value clean aesthetics, instant responsive interactions, and straightforward progress tracking. Inspired by the sleek minimalism of Stripe and Vercel, the application delivers:
+**ApexFit** delivers a sleek, high-performance gym management experience inspired by modern software aesthetics (Stripe, Linear, Vercel). Members can manage workouts, log sets in real-time, view exercise biomechanics, monitor anthropometrics, track personal records, and securely administer their member account.
 
-- **Executive Gym Dashboard**: Live welcome greeting, digital VIP Membership Pass card with validity countdown, today's workout launcher, 4 quick stat cards, interactive 7-day weekly activity grid, and recent logged workout history.
-- **Workout Routine Management**: Push, Pull, Leg, and Full Body splits with categorized tags, muscle groups, estimated calorie burn, and detailed exercise sequence overviews.
-- **Live Workout Tracker**: Real-time set-by-set tracker with weight modification, rep adjustment, completed set checkboxes, "+ Add Set" button, active stopwatch timer, and "Workout Completed 🎉" celebration summary modal.
-- **Exercise Encyclopedia**: 14+ foundational gym movements featuring real-time client-side search, multi-filter selector (Muscle Group, Equipment, Difficulty), and step-by-step biomechanical execution guides.
-- **Progress & Personal Records**: Recharts-powered bodyweight progression area chart, weekly calories burned bar chart, and verified personal record (PR) cards with progress deltas.
-- **Body Measurements & Anthropometrics**: Track weight, body fat %, height, chest, waist, arms, and thighs with local persistence and an "Add Measurement" form modal.
-- **Club Broadcasts & Announcements**: Filterable facility notices, new equipment arrivals, yoga sessions, and schedule changes.
-- **Member Profile & App Settings**: Dark / Light / System theme toggle, KG / LB unit selector, notification preferences, and editable member contact credentials.
+---
+
+## 🔐 Authentication & Account Management
+
+ApexFit features a production-ready, centralized authentication architecture powered by **Supabase Auth**:
+
+- **Authentication Service Layer** (`src/services/auth.ts`):
+  - Encapsulates `signUp()`, `signIn()`, `signOut()`, `resetPassword()`, `updatePassword()`, `changePassword()`, `getProfile()`, `updateProfile()`, `deleteAccount()`, `resendVerification()`.
+  - Translates raw Supabase API errors into friendly human messages.
+  - Automatically handles session persistence and offline demo fallbacks.
+- **Centralized Auth Provider & Hook** (`src/auth/AuthProvider.tsx`, `src/auth/useAuth.ts`):
+  - Subscribes to Supabase `onAuthStateChange` events.
+  - Exposes `user`, `profile`, `session`, `loading`, `isAuthenticated`, and `isEmailVerified`.
+- **Protected Routes** (`src/auth/ProtectedRoute.tsx`):
+  - Safeguards `/`, `/workouts`, `/exercises`, `/progress`, `/measurements`, `/announcements`, `/profile`, `/settings`.
+  - Redirects unauthenticated users to `/login?redirect=<target_path>` and seamlessly returns them to their requested page upon login.
+  - Renders a polished branded loading spinner while sessions load to eliminate flickering.
+- **Signup Flow** (`/signup`):
+  - Full Name (required)
+  - Email Address (validated)
+  - Mobile Number (required, stored in profile for contact records; prepared for SMS OTP)
+  - Password (min. 8 characters, 1 uppercase, 1 lowercase, 1 number)
+  - Confirm Password (strictly matching)
+  - Date of Birth (optional profile field, ready for age-verification requirements)
+  - Required Terms of Service & Privacy Policy agreement checkbox
+  - Email confirmation screen with resend link
+- **Login Flow** (`/login`):
+  - Email + Password with password visibility toggle
+  - Quick "Instant Demo Login" for one-click testing
+  - Forgot Password navigation
+- **Password Reset Flow** (`/forgot-password` & `/reset-password`):
+  - Secure email password recovery link
+  - Token recovery page with strict password validation
+- **Email Verification** (`/verify-email`):
+  - Verification banner, resend email trigger, and email-change flow
+- **Account Management** (`/profile` & `/settings`):
+  - View member photo, full name, email, mobile, DOB, membership tier, member since date, and verification status.
+  - Edit Profile modal (full name, email with confirmation notice, mobile, DOB, avatar URL).
+  - Change Password modal (current password check + new password validation).
+  - Destructive Delete Account dialog (requires typing "DELETE" to confirm permanent erasure).
+  - Multi-location logout triggers (Sidebar, Navbar, Mobile navigation drawer, Profile page, Settings page).
 
 ---
 
 ## 🎨 UI/UX Design System
 
-The app utilizes a centralized theme token architecture:
+The app utilizes a theme token architecture supporting both vibrant dark and crisp light themes:
 
 | Token | Dark Mode (Default) | Light Mode |
 |---|---|---|
 | **Background** | Charcoal `#0F1115` | Off-white `#F8FAFC` |
 | **Card Surface** | Deep Charcoal `#171A21` | Pure White `#FFFFFF` |
-| **Primary Accent** | Electric Neon Lime `#C6FF3D` | Emerald Teal `#10B981` |
+| **Primary Accent** | Electric Neon Lime `#C6FF3D` | Amber Gold `#F59E0B` |
 | **Border** | Subtle Slate `#232834` | Clean Gray `#E2E8F0` |
 | **Typography** | Plus Jakarta Sans & JetBrains Mono | Plus Jakarta Sans & JetBrains Mono |
 
@@ -53,11 +87,12 @@ The app utilizes a centralized theme token architecture:
 
 - **Core Framework**: React 19 + TypeScript
 - **Bundler & Build Tool**: Vite 8 with ESNext modules
+- **Form Validation**: Zod + React Hook Form (`@hookform/resolvers`)
 - **Styling**: Tailwind CSS v3 with custom theme tokens & CSS variables
 - **Icons**: Lucide React
 - **Data Visualizations**: Recharts
-- **Routing**: React Router DOM (v7) with SPA fallback
-- **Backend & Database (Prepared)**: Supabase (`@supabase/supabase-js`)
+- **Routing**: React Router DOM (v7) with protected route guards
+- **Backend & Database**: Supabase Auth + Supabase PostgreSQL
 - **Hosting Platform**: Vercel
 
 ---
@@ -66,211 +101,166 @@ The app utilizes a centralized theme token architecture:
 
 ```
 gymapp/
-├── public/                     # Static assets and favicon
 ├── src/
+│   ├── auth/                   # Centralized authentication & route guards
+│   │   ├── AuthContext.tsx     # Context definition & types
+│   │   ├── AuthProvider.tsx    # State provider & Supabase listener
+│   │   ├── useAuth.ts          # Custom consumption hook
+│   │   └── ProtectedRoute.tsx  # Protected route guard & session loader
 │   ├── components/             # Reusable UI components
-│   │   ├── common/             # Button, Card, Badge, Avatar, Modal, Drawer,
-│   │   │                       # Input, Select, Tabs, ProgressBar, StatCard,
-│   │   │                       # EmptyState, LoadingState, ErrorState, Toast
+│   │   ├── common/             # Button, Card, Badge, Avatar, Modal, Drawer, Input, Toast
 │   │   ├── navigation/         # Sidebar (desktop), Navbar (top), MobileNavigation (bottom)
-│   │   ├── dashboard/          # WelcomeHeader, MembershipCard, TodaysWorkoutCard,
-│   │   │                       # WeeklyActivityWidget, RecentActivityWidget
+│   │   ├── profile/            # EditProfileModal, ChangePasswordModal, DeleteAccountModal
 │   │   ├── workouts/           # WorkoutCard, WorkoutTrackerModal, WorkoutCompleteModal
 │   │   ├── exercises/          # ExerciseCard, ExerciseFilter, ExerciseDetailModal
-│   │   ├── progress/           # WeightProgressChart, WeeklyVolumeChart, PersonalRecordsList
-│   │   ├── measurements/       # MeasurementSummaryCard, AddMeasurementModal, MeasurementHistoryTable
-│   │   ├── announcements/      # AnnouncementCard
-│   │   └── profile/            # EditProfileModal
-│   ├── context/                # AppContext & global state providers
-│   ├── data/                   # Realistic mock data (members, exercises, routines, PRs)
-│   ├── hooks/                  # Custom business logic hooks
-│   │   ├── useTheme.ts         # Dark / Light / System mode management
-│   │   ├── useWorkouts.ts      # Active routine logging & completion
-│   │   ├── useExercises.ts     # Real-time search & filter hooks
-│   │   ├── useMeasurements.ts  # Anthropometric state & additions
-│   │   ├── useProgress.ts      # PRs, weight progression, calories
-│   │   ├── useAnnouncements.ts # Club announcements & category filters
-│   │   ├── useMember.ts        # Member profile & settings
-│   │   └── useToast.ts         # Global toast notifications
+│   │   ├── measurements/       # MeasurementSummaryCard, AddMeasurementModal
+│   │   └── progress/           # WeightProgressChart, WeeklyVolumeChart
+│   ├── context/                # AppContext (workouts, preferences, toasts)
+│   ├── data/                   # Realistic mock data
+│   ├── hooks/                  # useTheme, useWorkouts, useMember, useToast, etc.
 │   ├── layouts/
 │   │   └── AppLayout.tsx       # Desktop sidebar, mobile navbar, active tracking overlay
 │   ├── lib/
-│   │   └── supabase.ts         # Supabase client wrapper & isSupabaseConfigured()
-│   ├── pages/                  # Top-level view routes
+│   │   └── supabase.ts         # Supabase client & diagnostic health check
+│   ├── pages/                  # Application views
+│   │   ├── auth/               # LoginPage, SignupPage, ForgotPasswordPage,
+│   │   │                       # ResetPasswordPage, VerifyEmailPage
+│   │   ├── legal/              # TermsPage, PrivacyPage
 │   │   ├── DashboardPage.tsx
 │   │   ├── WorkoutsPage.tsx
-│   │   ├── WorkoutDetailPage.tsx
-│   │   ├── ExercisesPage.tsx
-│   │   ├── ProgressPage.tsx
-│   │   ├── MeasurementsPage.tsx
-│   │   ├── AnnouncementsPage.tsx
 │   │   ├── ProfilePage.tsx
 │   │   └── SettingsPage.tsx
-│   ├── services/               # Data-access layer (Mock + Supabase ready)
-│   │   ├── workouts.ts
-│   │   ├── exercises.ts
-│   │   ├── measurements.ts
-│   │   ├── progress.ts
-│   │   ├── announcements.ts
-│   │   └── members.ts
-│   ├── types/                  # Strict TypeScript models & database schemas
-│   │   ├── models.ts
-│   │   ├── database.types.ts
-│   │   └── index.ts
-│   ├── utils/                  # Utility helpers (cn, formatters, storage)
-│   ├── App.tsx                 # Client-side router configuration
-│   ├── index.css               # Design tokens, CSS variables & base styles
-│   └── main.tsx                # React root mount
-│
+│   ├── services/
+│   │   ├── auth.ts             # Supabase Auth service & error mapping
+│   │   └── members.ts          # Member profile & preferences service
+│   ├── types/                  # TypeScript domain models & auth contracts
+│   └── utils/
+│       ├── validation.ts       # Reusable Zod schemas for all forms
+│       ├── cn.ts               # Tailwind class merger
+│       └── storage.ts          # Safe cross-platform storage adapter
 ├── supabase/
-│   └── migrations/
-│       └── 20260928000000_initial_gym_schema.sql  # 11 PostgreSQL tables, indexes & RLS
-├── .env.example                # Environment variable template
-├── .gitignore                  # Git ignore rules
-├── package.json                # Project dependencies and npm scripts
-├── tsconfig.json               # Root TypeScript configuration
-├── tsconfig.app.json           # Application compiler options with path aliases
-├── vite.config.ts              # Production Vite configuration with @ path alias
-├── tailwind.config.js          # Tailwind theme configuration
-├── vercel.json                 # Vercel SPA rewrite routing rules
-└── README.md                   # Comprehensive technical documentation
+│   └── migrations/             # SQL migrations for Supabase
+│       ├── 20260928000000_initial_gym_schema.sql
+│       └── 20260928000001_auth_schema_and_triggers.sql
+└── README.md
 ```
-
----
-
-## 📱 Cross-Platform & React Native Code Sharing Strategy
-
-The codebase is strictly structured into **Platform-Agnostic** and **Platform-Specific** layers:
-
-### 1. 100% Shared Across Web & React Native
-- **`src/types/`**: All domain models (`Workout`, `Exercise`, `BodyMeasurement`, `Profile`) and database types.
-- **`src/services/`**: Pure asynchronous business data-access functions (`getWorkouts()`, `addMeasurement()`).
-- **`src/hooks/`**: Pure React logic hooks (`useWorkouts`, `useExercises`, `useMeasurements`, `useProgress`).
-- **`src/utils/`**: Numerical formatters, date formatters, and storage adapters.
-- **`src/data/`**: Shared initial offline mock data.
-
-### 2. Platform-Specific UI Implementation
-- **Web**: Implemented using HTML5 tags, Tailwind CSS utility classes, and Recharts.
-- **React Native (Phase 2 integration)**:
-  - Swap HTML elements (`div`, `p`, `button`) for React Native primitives (`View`, `Text`, `TouchableOpacity`).
-  - Swap Recharts for `react-native-chart-kit` or Victory Native.
-  - Swap web `localStorage` for `@react-native-async-storage/async-storage` via the existing `src/utils/storage.ts` adapter interface.
 
 ---
 
 ## 🗄️ Supabase Setup & Database Migrations
 
-The database migration file is located at `supabase/migrations/20260928000000_initial_gym_schema.sql`.
+### 1. Apply Schema Migrations
+In your Supabase project dashboard, open the **SQL Editor**, and run the migrations in order:
 
-It establishes 11 relational PostgreSQL tables:
-1. `profiles`: Extends user records with membership level and status.
-2. `memberships`: Details plans, start dates, expiration dates, and renewal.
-3. `exercises`: Exercise encyclopedia with equipment, difficulty, and muscles.
-4. `workouts`: Routine splits (Push, Pull, Legs, Full Body).
-5. `workout_exercises`: Join table linking routines to exercises with target sets/reps.
-6. `workout_sessions`: User logged workout history sessions.
-7. `workout_sets`: Individual logged sets (reps, weight, completion).
-8. `measurements`: Weight, height, body fat %, and circumferences.
-9. `announcements`: Gym notices and operational broadcasts.
-10. `personal_records`: User personal records (PRs) per exercise.
-11. `gym_settings`: Member appearance, notifications, units, and language.
-
-### How to Apply Migrations to a Live Supabase Instance
-1. Create a new project at [supabase.com](https://supabase.com).
-2. Go to the **SQL Editor** in the Supabase Dashboard.
-3. Open `supabase/migrations/20260928000000_initial_gym_schema.sql`, copy all contents, and execute.
-4. Copy your Supabase Project URL and Anon Key from **Project Settings > API**.
-5. Add credentials to your `.env` file.
+1. **`supabase/migrations/20260928000000_initial_gym_schema.sql`**
+   - Creates `profiles`, `memberships`, `exercises`, `workout_routines`, `workout_sessions`, `measurements`, `personal_records`, `announcements`.
+   - Populates initial exercise encyclopedia and gym announcements.
+2. **`supabase/migrations/20260928000001_auth_schema_and_triggers.sql`**
+   - Connects `public.profiles(id)` directly to `auth.users(id)` with `ON DELETE CASCADE`.
+   - Adds `mobile_number` and `date_of_birth` columns.
+   - Installs the secure `handle_new_user()` trigger to automatically create profiles on signup.
+   - Enables Row Level Security (RLS) on all user tables with strict ownership policies.
 
 ---
 
-## 🚀 Installation & Getting Started
+## ⚙️ Supabase Auth Configuration Guide
 
-### 1. Prerequisites
-- Node.js `v18+` or `v20+` or `v25+`
-- npm `v9+` or `v11+`
+### 1. URL Configuration
+Navigate to **Supabase Dashboard > Authentication > URL Configuration**:
 
-### 2. Install Dependencies
-```bash
-npm install
-```
+- **Site URL**:
+  - Local development: `http://localhost:5173`
+  - Production: `https://your-production-app.vercel.app`
+- **Redirect URLs (Allow list)**:
+  Add the following wildcard and exact redirect URLs:
+  ```
+  http://localhost:5173/**
+  http://localhost:5173/dashboard
+  http://localhost:5173/reset-password
+  https://your-production-app.vercel.app/**
+  https://your-production-app.vercel.app/dashboard
+  https://your-production-app.vercel.app/reset-password
+  ```
 
-### 3. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+### 2. Email Provider Settings
+Navigate to **Authentication > Providers > Email**:
+- Ensure **Email provider** is **Enabled**.
+- **Confirm email**: Recommended enabled for production. If disabled, users are signed in immediately upon registration.
+- **Secure email change**: Enabled (requires confirmation before applying email updates).
+
+---
+
+## 🛡️ Row Level Security (RLS) & Security Policies
+
+All member data is protected by PostgreSQL Row Level Security:
+
+| Table | Policy | Enforced Rule |
+|---|---|---|
+| `profiles` | User Ownership | `auth.uid() = id` (SELECT, INSERT, UPDATE, DELETE) |
+| `memberships` | Member Ownership | `auth.uid() = profile_id` (SELECT) |
+| `measurements` | User Ownership | `auth.uid() = profile_id` (ALL) |
+| `workout_sessions` | User Ownership | `auth.uid() = profile_id` (ALL) |
+| `personal_records` | User Ownership | `auth.uid() = profile_id` (ALL) |
+| `exercises` | Public Authenticated | Authenticated users can read exercise movements |
+| `announcements` | Public Authenticated | Authenticated users can view facility notices |
+
+> **Security Note:** The frontend only uses `VITE_SUPABASE_ANON_KEY`. The privileged `SUPABASE_SERVICE_ROLE_KEY` is **never** bundled into the client application.
 
 ---
 
 ## 🔑 Environment Variables
 
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
+Create `.env` in the project root:
 
-Define the configuration variables:
 ```env
-# Supabase Configuration (Optional for MVP - app seamlessly runs in local mock mode without credentials)
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+# Supabase Configuration (Get from Supabase Dashboard > Project Settings > API)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key-here
 
-# App Metadata
+# Application Configuration
 VITE_APP_NAME="ApexFit Gym"
 VITE_APP_ENV=development
 ```
 
 ---
 
-## 📦 Building for Production
+## 🚀 Installation & Getting Started
 
-Compile TypeScript and build the optimized production distribution:
 ```bash
-npm run build
+# 1. Clone the repository
+git clone https://github.com/abhiversion2/gymapp.git
+cd gymapp
+
+# 2. Install dependencies
+npm install
+
+# 3. Start local development server
+npm run dev
 ```
 
-Preview the production build locally:
-```bash
-npm run preview
-```
+Visit `http://localhost:5173` to test registration, login, workout tracking, and account management.
 
 ---
 
-## ☁️ Vercel Deployment Guide
+## 🚢 Vercel Deployment Guide
 
-The repository includes a ready-to-deploy `vercel.json` configuration for single-page routing:
-
-```json
-{
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
-```
-
-### Deploy in 3 Steps:
-1. Push this repository to GitHub, GitLab, or Bitbucket.
-2. In the [Vercel Dashboard](https://vercel.com/new), select "Import Project" and choose the repository.
-3. Keep default settings:
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Add environment variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` if connected.
-5. Click **Deploy**!
+1. Push your changes to GitHub:
+   ```bash
+   git add .
+   git commit -m "feat: complete supabase authentication"
+   git push origin main
+   ```
+2. Import the repository into **Vercel**.
+3. Under **Project Settings > Environment Variables**, add:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+4. Deploy! Vercel will build the production bundle with `npm run build`.
 
 ---
 
-## 🗺️ Future Roadmap
+## 🔮 Future Roadmap
 
-- [ ] **Phase 2 — Authentication & Multi-Tenant Profiles**: Supabase Auth (Magic Links, Google OAuth), secure profile sessions, and role-based access control.
-- [ ] **Phase 3 — Gym Operations**: Front desk QR check-in scanner, membership billing, trainer booking, and class attendance caps.
-- [ ] **Phase 4 — Advanced Analytics**: 1RM percentage calculator, volume overload heatmaps, and progress photo timeline comparison.
-- [ ] **Phase 5 — Native Mobile App**: React Native Expo build sharing `@services`, `@hooks`, and `@types` with Apple HealthKit & Google Health Connect sync.
-
----
-
-Built with pride for high-performance athletes & modern fitness clubs.
+- **Phase 2 — Mobile Phone & SMS OTP**: Supabase Phone authentication for instant one-time-password login.
+- **Phase 3 — Social Authentication**: One-click Google and Apple login integrations.
+- **Phase 4 — Gym Role-Based Access Control**: Member, Personal Trainer, Gym Floor Manager, Super Administrator.
+- **Phase 5 — Multi-Branch / Multi-Gym Architecture**: Single user account linked across multiple affiliated fitness clubs.
