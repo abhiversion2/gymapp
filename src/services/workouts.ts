@@ -11,9 +11,53 @@ export async function getWorkouts(): Promise<Workout[]> {
       const { data, error } = await supabase
         .from('workouts')
         .select('*, workout_exercises(*, exercises(*))');
+
       if (!error && data && data.length > 0) {
-        // Map database row to domain Workout model
-        return data as unknown as Workout[];
+        return data.map((row: any, idx: number) => {
+          const fallback = mockWorkouts[idx % mockWorkouts.length];
+          const dbExercises = (row.workout_exercises || []).map((we: any) => ({
+            id: we.id,
+            exerciseId: we.exercise_id,
+            exercise: we.exercises
+              ? {
+                  id: we.exercises.id,
+                  name: we.exercises.name,
+                  targetMuscle: we.exercises.target_muscle,
+                  secondaryMuscles: we.exercises.secondary_muscles || [],
+                  equipment: we.exercises.equipment,
+                  difficulty: we.exercises.difficulty,
+                  description: we.exercises.description || '',
+                  instructions: we.exercises.instructions || [],
+                  sampleImageUrl: we.exercises.sample_image_url || '',
+                  caloriesPerHourEstimate: we.exercises.calories_per_hour_estimate || 400,
+                }
+              : fallback.exercises[0]?.exercise || mockWorkouts[0].exercises[0].exercise,
+            sets: we.sets || 3,
+            reps: we.reps || 10,
+            targetWeightKg: we.target_weight_kg ? Number(we.target_weight_kg) : undefined,
+            restSeconds: we.rest_seconds || 90,
+          }));
+
+          const exercises = dbExercises.length > 0 ? dbExercises : fallback.exercises;
+
+          return {
+            id: row.id,
+            name: row.name || fallback.name,
+            subtitle: row.subtitle || fallback.subtitle,
+            description: row.description || fallback.description,
+            category: row.category || fallback.category,
+            targetMuscles:
+              row.target_muscles && row.target_muscles.length > 0
+                ? row.target_muscles
+                : fallback.targetMuscles,
+            durationMinutes: Number(row.duration_minutes || fallback.durationMinutes),
+            exercisesCount: exercises.length || fallback.exercisesCount,
+            difficulty: row.difficulty || fallback.difficulty,
+            estimatedCalories: Number(row.estimated_calories || fallback.estimatedCalories),
+            imageUrl: row.image_url || fallback.imageUrl,
+            exercises,
+          };
+        });
       }
     } catch (err) {
       console.warn('Supabase query failed, falling back to mock workouts:', err);

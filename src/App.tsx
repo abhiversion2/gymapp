@@ -26,12 +26,14 @@ import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
 // Legal Pages
 import { TermsPage } from './pages/legal/TermsPage';
 import { PrivacyPage } from './pages/legal/PrivacyPage';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppProvider>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppProvider>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -68,6 +70,7 @@ export const App: React.FC = () => {
         </AppProvider>
       </AuthProvider>
     </BrowserRouter>
+  </ErrorBoundary>
   );
 };
 

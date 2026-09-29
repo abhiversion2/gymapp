@@ -151,7 +151,7 @@ export const WorkoutDetailPage: React.FC = () => {
             Target Muscle Groups
           </h4>
           <div className="flex flex-wrap gap-2">
-            {workout.targetMuscles.map((muscle) => (
+            {(workout.targetMuscles || []).map((muscle) => (
               <span
                 key={muscle}
                 className="px-3 py-1 rounded-lg bg-[#0F1115] text-xs font-bold text-[#C6FF3D] border border-[#2B3448]"
@@ -173,12 +173,12 @@ export const WorkoutDetailPage: React.FC = () => {
             </p>
           </div>
           <span className="text-xs font-bold text-[#C6FF3D]">
-            {workout.exercises.length} Exercises Total
+            {workout.exercises?.length || 0} Exercises Total
           </span>
         </div>
 
         <div className="space-y-3">
-          {workout.exercises.map((item, idx) => (
+          {(workout.exercises || []).map((item, idx) => (
             <div
               key={item.id}
               className="p-4 rounded-xl bg-[#0F1115] border border-[#232834] hover:border-[#C6FF3D]/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"

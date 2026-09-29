@@ -78,7 +78,7 @@ export const TodaysWorkoutCard: React.FC<TodaysWorkoutCardProps> = ({
 
         {/* Target Muscles */}
         <div className="flex flex-wrap gap-1.5">
-          {workout.targetMuscles.map((muscle) => (
+          {(workout.targetMuscles || []).map((muscle) => (
             <span
               key={muscle}
               className="px-2 py-0.5 rounded-md bg-[#222836] text-[11px] font-semibold text-slate-300 border border-[#2C3446]"
